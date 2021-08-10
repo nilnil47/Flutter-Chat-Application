@@ -9,7 +9,6 @@ import 'package:emoji_picker/emoji_picker.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter/services.dart';
 
-final _firestore = FirebaseFirestore.instance;
 User loggedInuser;
 final focusNode = FocusNode();
 
@@ -26,7 +25,6 @@ class _ChatScreenState extends State<ChatScreen> {
   bool isEmojiVisible = false;
   bool isKeyboardVisible = false;
   var messageText;
-
 
   @override
   void initState() {
@@ -45,7 +43,6 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     });
   }
-
 
   Future toggleEmojiKeyboard() async {
     if (isKeyboardVisible) {
@@ -86,13 +83,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void onEmojiSelected(String emoji) => setState(() {
-    controller.text = controller.text + emoji;
-  });
+        controller.text = controller.text + emoji;
+      });
 
   @override
   Widget build(BuildContext context) {
-
-
     Widget buildSticker() {
       return EmojiPicker(
         rows: 3,
@@ -102,16 +97,12 @@ class _ChatScreenState extends State<ChatScreen> {
         numRecommended: 10,
         onEmojiSelected: (emoji, category) {
           onEmojiSelected(emoji.emoji);
-          
         },
       );
     }
 
-
-
     return Scaffold(
       appBar: AppBar(
-
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_rounded),
           onPressed: () {
@@ -142,7 +133,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 height: 50.0,
                 decoration: new BoxDecoration(
                     border: new Border(
-                        top: new BorderSide(color: Colors.blueGrey, width: 0.5)),
+                        top:
+                            new BorderSide(color: Colors.blueGrey, width: 0.5)),
                     color: Colors.white),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -153,7 +145,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         child: new IconButton(
                           icon: new Icon(isEmojiVisible
                               ? Icons.keyboard_rounded
-                              :Icons.emoji_emotions),
+                              : Icons.emoji_emotions),
                           onPressed: onClickedEmoji,
                           color: Colors.blueGrey,
                         ),
@@ -168,6 +160,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           focusNode: focusNode,
                           onSubmitted: (value) {
                             controller.clear();
+
+                            // send message
                             _firestore.collection('messages').add({
                               'sender': loggedInuser.email,
                               'text': messageText,
@@ -179,7 +173,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           onChanged: (value) {
                             messageText = value;
                           },
-                          style: TextStyle(color: Colors.blueGrey, fontSize: 15.0),
+                          style:
+                              TextStyle(color: Colors.blueGrey, fontSize: 15.0),
                           decoration: kMessageTextFieldDecoration,
                         ),
                       ),
@@ -191,6 +186,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           icon: new Icon(Icons.send),
                           onPressed: () {
                             controller.clear();
+
+                            // send message
                             _firestore.collection('messages').add({
                               'sender': loggedInuser.email,
                               'text': messageText,
@@ -202,7 +199,6 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                       color: Colors.white,
                     ),
-
                   ],
                 ),
               ),
@@ -212,9 +208,8 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       ),
     );
-
-
   }
+
   void onClickedEmoji() async {
     if (isEmojiVisible) {
       focusNode.requestFocus();
@@ -224,21 +219,20 @@ class _ChatScreenState extends State<ChatScreen> {
     }
     toggleEmojiKeyboard();
   }
-
-
 }
 
 String giveUsername(String email) {
-  return email.replaceAll(new RegExp(r'@g(oogle)?mail\.com$'),'');
+  return email.replaceAll(new RegExp(r'@g(oogle)?mail\.com$'), '');
 }
 
 class MessagesStream extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
+      // messages receiver
       stream: _firestore
           .collection('messages')
-      // Sort the messages by timestamp DESC because we want the newest messages on bottom.
+          // Sort the messages by timestamp DESC because we want the newest messages on bottom.
           .orderBy("timestamp", descending: true)
           .snapshots(),
       builder: (context, snapshot) {
@@ -265,8 +259,6 @@ class MessagesStream extends StatelessWidget {
           );
         }).toList();
 
-
-
         return Expanded(
           child: ListView(
             reverse: true,
@@ -278,7 +270,6 @@ class MessagesStream extends StatelessWidget {
     );
   }
 }
-
 
 class MessageBubble extends StatelessWidget {
   MessageBubble({this.sender, this.text, this.timestamp, this.isMe});
@@ -318,31 +309,34 @@ class MessageBubble extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
               child: Column(
-                crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                crossAxisAlignment:
+                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
                   Text(
-                  text,
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    color: isMe ? Colors.white : Colors.black54,
+                    text,
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      color: isMe ? Colors.white : Colors.black54,
+                    ),
                   ),
-                ),
                   Padding(
-                    padding: const EdgeInsets.only(top:6.0),
-                    child: Text("${DateFormat('h:mm a').format(dateTime)}",style: TextStyle(
-                      fontSize: 9.0,
-                      color: isMe ? Colors.white.withOpacity(0.5) : Colors.black54.withOpacity(0.5),
-                    ),),
-                  ),],
+                    padding: const EdgeInsets.only(top: 6.0),
+                    child: Text(
+                      "${DateFormat('h:mm a').format(dateTime)}",
+                      style: TextStyle(
+                        fontSize: 9.0,
+                        color: isMe
+                            ? Colors.white.withOpacity(0.5)
+                            : Colors.black54.withOpacity(0.5),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
         ],
       ),
     );
-
   }
-
-
 }
-
